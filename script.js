@@ -185,31 +185,56 @@ function getScenario(text) {
 }
 
 // ==========================================
-// 4. ANALYZE ACTION
+// 4. ANALYZE ACTION (เชื่อมต่อกับ Make.com)
 // ==========================================
-analyzeBtn.onclick = () => {
+analyzeBtn.onclick = async () => {
   const text = resultArea.value;
   if(!text) return;
 
+  // แสดงหน้าโหลด
   document.getElementById('emptyState').classList.add('hidden');
   document.getElementById('loadingState').classList.remove('hidden');
   document.getElementById('reportContent').classList.add('hidden');
 
-  setTimeout(() => {
+  // URL ของ Make.com Webhook ของคุณ
+  const webhookUrl = 'https://hook.us2.make.com/i96gm5v124bo8kwxamxwdemjdek32rvx';
+  
+  // กำหนด API Key (ถ้าคุณตั้งค่าใน Make ให้ต้องใช้)
+  const myApiKey = 'ใส่_API_KEY_ของคุณตรงนี้_ถ้ามี';
+
+  try {
+    // ส่งข้อมูลไปที่ Make.com
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // วิธีที่ 1: ใส่ API Key ใน Headers (นิยมและปลอดภัยที่สุด)
+        'Authorization': `Bearer ${myApiKey}`, 
+        // หรือ 'x-api-key': myApiKey
+      },
+      body: JSON.stringify({
+        // วิธีที่ 2: ใส่แนบไปกับข้อมูลใน Body (ถ้าวิธีแรกใช้ไม่ได้)
+        apiKey: myApiKey, 
+        
+        // ข้อมูลที่ต้องการส่งไปให้ Make วิเคราะห์
+        studentName: document.getElementById('displayName').innerText,
+        studentId: document.getElementById('inputID').value,
+        message: text 
+      })
+    });
+
+    if (!response.ok) throw new Error('Network response was not ok');
+
+    // รับผลลัพธ์ที่ Make.com ส่งกลับมา (Make ต้องมีโมดูล Webhook Response)
+    const data = await response.json(); 
+
+    // ซ่อนหน้าโหลด และแสดงผลลัพธ์
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('reportContent').classList.remove('hidden');
-    
-    const data = getScenario(text);
 
-    let risk = 0;
-    if(data.id === 'depression') {
-       risk = Math.floor(Math.random() * 20) + 80;
-    } else if (data.id === 'academic' || data.id === 'family') {
-       risk = Math.floor(Math.random() * 30) + 50; 
-    } else {
-       risk = Math.floor(Math.random() * 40) + 20;
-    }
-
+    // --- สมมติว่า Make ส่งข้อมูลกลับมาในรูปแบบ { stressRisk: 80, core: "...", cause: "...", solutions: ["..."] } ---
+    // นำข้อมูลมาแสดงบนหน้าเว็บ
+    const risk = data.stressRisk || 0;
     document.getElementById('stressScore').innerText = risk + "%";
     document.getElementById('stabilityScore').innerText = (100 - risk) + "%";
     
@@ -218,17 +243,20 @@ analyzeBtn.onclick = () => {
     else if(risk > 40) stressEl.className = "text-xl md:text-2xl font-bold text-amber-400 mt-1";
     else stressEl.className = "text-xl md:text-2xl font-bold text-emerald-400 mt-1";
 
-    document.getElementById('textCore').innerText = data.core;
+    document.getElementById('textCore').innerText = data.core || "-";
+    document.getElementById('textCause').innerText = data.cause || "-";
     
-    let causeText = data.cause;
-    if (text.length > 10) {
-       causeText += ` (ตรวจพบจากคีย์เวิร์ด: "${text.substring(0, 15)}...")`;
+    if (data.solutions && Array.isArray(data.solutions)) {
+      document.getElementById('textSolution').innerHTML = data.solutions.map(s => 
+        `<div class="flex items-start gap-2"><span class="text-emerald-400 mt-1">•</span><span>${s}</span></div>`
+      ).join('');
     }
-    document.getElementById('textCause').innerText = causeText;
-    
-    document.getElementById('textSolution').innerHTML = data.solutions.map(s => 
-      `<div class="flex items-start gap-2"><span class="text-emerald-400 mt-1">•</span><span>${s}</span></div>`
-    ).join('');
 
-  }, 2000);
+  } catch (error) {
+    console.error('Error fetching data from Make.com:', error);
+    alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับ AI กรุณาลองใหม่อีกครั้ง');
+    
+    document.getElementById('loadingState').classList.add('hidden');
+    document.getElementById('emptyState').classList.remove('hidden');
+  }
 };
