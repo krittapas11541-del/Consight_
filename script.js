@@ -198,7 +198,7 @@ analyzeBtn.onclick = async () => {
   document.getElementById('reportContent').classList.add('hidden');
 
   // URL ของ Make.com Webhook ของคุณ
-  const webhookUrl = 'https://hook.us2.make.com/i96gm5v124bo8kwxamxwdemjdek32rvx';
+  const webhookUrl = 'https://hook.eu1.make.com/id14p28rlucyjk4xwxua38ibrj7f8iv4';
 
   try {
     // ส่งข้อมูลไปที่ Make.com (ลบส่วน API Key ที่ทำให้ Error ออกแล้ว)
@@ -251,3 +251,4 @@ analyzeBtn.onclick = async () => {
     document.getElementById('emptyState').classList.remove('hidden');
   }
 };
+
