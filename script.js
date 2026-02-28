@@ -90,6 +90,7 @@ clearBtn.addEventListener('click', () => {
 // ==========================================
 // 3. KNOWLEDGE BASE & SCENARIOS
 // ==========================================
+// (ส่วนนี้เก็บไว้เผื่อใช้เป็น Fallback ได้ในอนาคต หากไม่ได้ใช้แล้วสามารถลบออกได้ครับ)
 const scenarios = [
   {
     id: 'academic',
@@ -198,24 +199,15 @@ analyzeBtn.onclick = async () => {
 
   // URL ของ Make.com Webhook ของคุณ
   const webhookUrl = 'https://hook.us2.make.com/i96gm5v124bo8kwxamxwdemjdek32rvx';
-  
-  // กำหนด API Key (ถ้าคุณตั้งค่าใน Make ให้ต้องใช้)
-  const myApiKey = 'ใส่_API_KEY_ของคุณตรงนี้_ถ้ามี';
 
   try {
-    // ส่งข้อมูลไปที่ Make.com
+    // ส่งข้อมูลไปที่ Make.com (ลบส่วน API Key ที่ทำให้ Error ออกแล้ว)
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        // วิธีที่ 1: ใส่ API Key ใน Headers (นิยมและปลอดภัยที่สุด)
-        'Authorization': `Bearer ${myApiKey}`, 
-        // หรือ 'x-api-key': myApiKey
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        // วิธีที่ 2: ใส่แนบไปกับข้อมูลใน Body (ถ้าวิธีแรกใช้ไม่ได้)
-        apiKey: myApiKey, 
-        
         // ข้อมูลที่ต้องการส่งไปให้ Make วิเคราะห์
         studentName: document.getElementById('displayName').innerText,
         studentId: document.getElementById('inputID').value,
@@ -232,8 +224,7 @@ analyzeBtn.onclick = async () => {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('reportContent').classList.remove('hidden');
 
-    // --- สมมติว่า Make ส่งข้อมูลกลับมาในรูปแบบ { stressRisk: 80, core: "...", cause: "...", solutions: ["..."] } ---
-    // นำข้อมูลมาแสดงบนหน้าเว็บ
+    // --- นำข้อมูลที่ Make ตอบกลับมา แสดงบนหน้าเว็บ ---
     const risk = data.stressRisk || 0;
     document.getElementById('stressScore').innerText = risk + "%";
     document.getElementById('stabilityScore').innerText = (100 - risk) + "%";
