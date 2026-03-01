@@ -114,6 +114,7 @@ try {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json' 
+        // ห้ามมีบรรทัด x-make-apikey เด็ดขาด ลบออกให้หมดเลยครับ
       },
       body: JSON.stringify({
         studentName: document.getElementById('displayName').innerText,
@@ -170,4 +171,5 @@ try {
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('emptyState').classList.remove('hidden');
   }
+
 };
