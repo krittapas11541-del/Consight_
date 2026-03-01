@@ -90,10 +90,10 @@ clearBtn.addEventListener('click', () => {
 // ==========================================
 // 3. KNOWLEDGE BASE & SCENARIOS (ไม่ได้ใช้แล้ว แต่เก็บไว้เป็นข้อมูลอ้างอิง)
 // ==========================================
-// ... (ผมละไว้เพื่อให้โค้ดดูไม่ยาวเกินไป คุณสามารถเก็บตัวแปร scenarios ไว้เหมือนเดิมได้เลยครับ) ...
+// ... (คุณสามารถเก็บตัวแปร scenarios ไว้เหมือนเดิมได้เลยครับ) ...
 
 // ==========================================
-// 4. ANALYZE ACTION (เชื่อมต่อ Make.com Webhook 100%)
+// 4. ANALYZE ACTION (เชื่อมต่อ Google Apps Script)
 // ==========================================
 analyzeBtn.onclick = async () => {
   const text = resultArea.value;
@@ -104,17 +104,17 @@ analyzeBtn.onclick = async () => {
   document.getElementById('loadingState').classList.remove('hidden');
   document.getElementById('reportContent').classList.add('hidden');
 
-  // 2. กำหนด URL ของ Make.com Webhook 
-  // ⚠️ สำคัญ: เอา URL ที่ได้จาก Make.com มาวางแทนที่บรรทัดด้านล่างนี้
-  const webhookUrl = 'https://hook.us2.make.com/vysolmrf2vit4f5qd4ueys28wwuty12d'; 
+  // 2. กำหนด URL ของ Google Apps Script
+  // ⚠️ สำคัญ: นำ URL ที่ได้จากการ Deploy ของ GAS (ลงท้ายด้วย /exec) มาวางแทนที่ด้านล่างนี้
+  const webhookUrl = 'https://script.google.com/macros/s/ใส่_ID_เว็บแอปของคุณที่นี่/exec'; 
 
-try {
-    // ยิง Request ไปที่ Make.com
+  try {
+    // 3. ยิง Request ไปที่ GAS
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json' 
-        // ห้ามมีบรรทัด x-make-apikey เด็ดขาด ลบออกให้หมดเลยครับ
+        // ใช้ text/plain เพื่อกันไม่ให้เบราว์เซอร์บล็อกการเชื่อมต่อ (แก้ CORS Error 100%)
+        'Content-Type': 'text/plain;charset=utf-8' 
       },
       body: JSON.stringify({
         studentName: document.getElementById('displayName').innerText,
@@ -127,23 +127,14 @@ try {
       throw new Error(`HTTP Error Status: ${response.status}`);
     }
 
-    // --- ส่วนที่แก้ไขใหม่ ---
-    // 1. รับผลลัพธ์มาเป็นข้อความธรรมดาก่อน
-    const rawText = await response.text(); 
-    console.log("Raw Response from Make:", rawText); // ปริ้นดูใน Console ว่าได้อะไรมา
-    
-    // 2. ลบ ```json และ ``` ที่ Gemini มักจะแถมมาทิ้งไป
-    const cleanText = rawText.replace(/```json/ig, '').replace(/```/g, '').trim();
-    
-    // 3. แปลงเป็น JSON ที่สมบูรณ์
-    const data = JSON.parse(cleanText);
-    // ----------------------
+    // 4. รับผลลัพธ์กลับมา (GAS จะส่งกลับมาเป็น JSON สำเร็จรูปพร้อมใช้)
+    const data = await response.json(); 
 
     // ซ่อนหน้า Loading และแสดงหน้า Report
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('reportContent').classList.remove('hidden');
     
-    // นำข้อมูลจาก JSON มาแสดงผลบนหน้าจอ
+    // 5. นำข้อมูลจาก JSON มาแสดงผลบนหน้าจอ
     const risk = data.stressRisk || 0;
     document.getElementById('stressScore').innerText = risk + "%";
     document.getElementById('stabilityScore').innerText = (100 - risk) + "%";
@@ -165,11 +156,10 @@ try {
     }
 
   } catch (error) {
-    console.error('❌ Error Fetching to Make.com:', error);
+    console.error('❌ Error Fetching to GAS:', error);
     alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ AI กรุณาลองใหม่อีกครั้ง');
     
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('emptyState').classList.remove('hidden');
   }
-
 };
