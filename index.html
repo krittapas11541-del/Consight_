@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Consight - Student Insight (Responsive)</title>
+  <title>Consight - Student Insight</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="flex flex-col items-center justify-center p-4 lg:p-6 min-h-screen">
@@ -19,13 +18,18 @@
     </div>
     
     <div class="text-center">
-      <h2 class="text-2xl font-bold text-white">ลงทะเบียน</h2>
-      <p class="text-slate-400 text-sm">กรอกข้อมูลเพื่อเริ่มใช้งาน</p>
+      <h2 class="text-2xl font-bold text-white">Consight Login</h2>
+      <p class="text-slate-400 text-sm">เข้าสู่ระบบสำหรับครูผู้ให้คำปรึกษา</p>
     </div>
 
     <form id="loginForm" class="w-full space-y-4">
       <div>
-        <label class="text-xs text-slate-400 ml-2">ชื่อ - นามสกุล</label>
+        <label class="text-xs text-slate-400 ml-2">ชื่อครูผู้ให้คำปรึกษา</label>
+        <input type="text" id="inputCounselor" required class="w-full p-3 rounded-xl dark-input" placeholder="เช่น ครูสมชาย ใจดี">
+      </div>
+      <hr class="border-white/10 my-2">
+      <div>
+        <label class="text-xs text-slate-400 ml-2">ชื่อ - นามสกุล นักเรียน</label>
         <input type="text" id="inputName" required class="w-full p-3 rounded-xl dark-input" placeholder="เช่น นายไบรท์ กฤตภาส">
       </div>
       
@@ -48,32 +52,36 @@
         </div>
       </div>
 
-      <div class="flex items-start gap-3 pt-2">
-        <div class="flex items-center h-5">
-          <input id="consentCheck" type="checkbox" required class="w-5 h-5 border border-slate-500 rounded bg-slate-800 focus:ring-3 focus:ring-violet-300">
-        </div>
-        <label for="consentCheck" class="text-sm font-medium text-slate-300 leading-tight">
-          ยอมรับ <a href="#" class="text-violet-400 underline">นโยบายความเป็นส่วนตัว</a>
-        </label>
-      </div>
-
       <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-xl text-white font-bold text-lg shadow-lg hover:brightness-110 transition-all active:scale-95 mt-4">
-        เข้าสู่ระบบ
+        เริ่มการให้คำปรึกษา
       </button>
     </form>
   </div>
 
-  <div id="dashboardPage" class="hidden w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-auto lg:h-[90vh] pb-10 lg:pb-0">
+  <div id="dashboardPage" class="hidden w-full max-w-[1400px] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-auto lg:h-[90vh] pb-10 lg:pb-0">
     
-    <div class="order-1 lg:col-span-5 glass-card p-6 flex flex-col items-center relative overflow-hidden shrink-0">
-      <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-violet-500/5 to-transparent pointer-events-none"></div>
+    <div class="order-3 lg:order-1 lg:col-span-3 glass-card p-5 flex flex-col h-[300px] lg:h-full overflow-hidden">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-white">
+            <i class="fa-solid fa-clock-rotate-left text-violet-400"></i> ประวัติการปรึกษา
+        </h2>
+        <div class="flex-1 overflow-y-auto custom-scroll space-y-2 pr-2">
+            <div class="p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all">
+                <div class="text-xs text-fuchsia-400 font-bold mb-1">14 ส.ค. 2568</div>
+                <div class="text-sm text-slate-200">ปรึกษาเรื่องเรียนต่อและการเตรียมสอบ</div>
+            </div>
+            <div class="p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all">
+                <div class="text-xs text-violet-400 font-bold mb-1">2 ก.ค. 2568</div>
+                <div class="text-sm text-slate-200">ความเครียดจากการปรับตัวในห้องเรียน</div>
+            </div>
+        </div>
+    </div>
 
+    <div class="order-1 lg:order-2 lg:col-span-4 glass-card p-6 flex flex-col items-center relative overflow-hidden shrink-0">
       <div class="w-full flex justify-between items-center mb-6 z-10">
         <div class="flex items-center gap-2">
           <div class="w-1.5 h-6 bg-fuchsia-500 rounded-full"></div>
-          <h2 class="text-lg font-bold">บันทึกเสียง</h2>
+          <h2 class="text-lg font-bold">รับข้อมูล (Input)</h2>
         </div>
-        <div class="text-[10px] md:text-xs font-mono text-slate-400 bg-slate-800/50 px-3 py-1 rounded-full">AI Mode</div>
       </div>
 
       <div class="w-full flex-1 flex flex-col justify-center items-center gap-4 z-10">
@@ -86,83 +94,89 @@
         
         <div class="text-center mb-2">
           <h3 id="micLabel" class="text-xl font-bold text-white">แตะเพื่อเริ่มพูด</h3>
-          <p id="statusText" class="text-slate-400 text-sm">ระบบพร้อมรับฟังปัญหาของคุณ</p>
         </div>
 
-        <div class="w-full bg-black/20 rounded-2xl p-4 border border-white/5 relative group">
-          <textarea id="result" class="w-full h-24 lg:h-32 bg-transparent text-slate-200 resize-none focus:outline-none custom-scroll placeholder-slate-600 text-sm md:text-base" placeholder="พูดหรือพิมพ์ข้อความ..."></textarea>
+        <label class="w-full py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium border border-white/10 cursor-pointer flex items-center justify-center gap-2 transition-all">
+            <i class="fa-solid fa-file-audio text-violet-400"></i> อัปโหลดไฟล์เสียง (.mp3, .wav)
+            <input type="file" id="audioUpload" accept="audio/*" class="hidden">
+        </label>
+
+        <div class="w-full bg-black/20 rounded-2xl p-4 border border-white/5 relative mt-2">
+          <textarea id="result" class="w-full h-24 lg:h-32 bg-transparent text-slate-200 resize-none focus:outline-none custom-scroll placeholder-slate-600 text-sm md:text-base" placeholder="ข้อความจะปรากฏที่นี่..."></textarea>
           <button id="clearBtn" class="absolute bottom-2 right-4 text-xs text-slate-500 hover:text-red-400 p-1">
             <i class="fa-solid fa-trash"></i> ล้าง
           </button>
         </div>
 
-        <button id="analyzeBtn" disabled class="w-full py-3.5 bg-slate-700 text-slate-400 rounded-xl font-bold text-base md:text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-600 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] mt-2">
-          <i class="fa-solid fa-bolt"></i> <span class="hidden md:inline">ประมวลผล (Analyze)</span><span class="md:hidden">ประมวลผล</span>
+        <button id="analyzeBtn" disabled class="w-full py-3.5 bg-slate-700 text-slate-400 rounded-xl font-bold text-base md:text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-600 hover:text-white mt-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> ประมวลผล SOAP
         </button>
       </div>
     </div>
 
-    <div class="order-2 lg:col-span-7 glass-card p-5 lg:p-6 flex flex-col relative overflow-hidden h-full">
-      <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-4 shrink-0">
-        <div class="flex items-center gap-3">
-          <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-tr from-slate-700 to-slate-600 border-2 border-slate-500 flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-user text-xl md:text-3xl text-slate-300"></i>
-          </div>
-          <div class="overflow-hidden">
-            <h2 id="displayName" class="text-lg md:text-2xl font-bold text-white truncate">...</h2>
-            <div class="flex flex-wrap gap-2 text-xs md:text-sm text-slate-400 mt-1">
-              <span id="displayClass" class="bg-white/10 px-2 py-0.5 rounded whitespace-nowrap">ชั้น: -</span>
-              <span id="displayID" class="bg-white/10 px-2 py-0.5 rounded whitespace-nowrap">รหัส: -</span>
+    <div class="order-2 lg:order-3 lg:col-span-5 glass-card p-5 lg:p-6 flex flex-col relative overflow-hidden h-full">
+      <div class="flex flex-col gap-3 pb-4 border-b border-white/10 mb-4 shrink-0">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 id="displayName" class="text-xl md:text-2xl font-bold text-white uppercase tracking-wide">...</h2>
+                <div class="text-sm text-slate-400 mt-1">ผู้ให้คำปรึกษา: <span id="displayCounselor" class="text-white">...</span></div>
             </div>
-          </div>
-        </div>
-        <div class="text-right shrink-0 ml-2">
-          <div class="text-fuchsia-400 font-bold uppercase tracking-widest text-[10px] md:text-sm">Report</div>
-          <div id="currentDate" class="text-slate-500 text-[10px] md:text-xs"></div>
+            <div class="text-right">
+                <div class="bg-fuchsia-500/20 text-fuchsia-400 px-3 py-1 rounded-full text-xs font-bold border border-fuchsia-500/30">SOAP Note</div>
+                <div id="currentDate" class="text-slate-500 text-[10px] md:text-xs mt-1"></div>
+            </div>
         </div>
       </div>
 
-      <div class="flex-1 lg:overflow-y-auto custom-scroll lg:pr-2 relative min-h-[300px]">
+      <div class="flex-1 lg:overflow-y-auto custom-scroll lg:pr-2 relative min-h-[400px]">
         <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-slate-600 space-y-4 opacity-50">
-          <i class="fa-solid fa-chart-pie text-5xl md:text-6xl"></i>
-          <p class="text-sm md:text-base">รอผลการวิเคราะห์...</p>
+          <i class="fa-solid fa-file-medical text-5xl md:text-6xl"></i>
+          <p class="text-sm md:text-base">รอประมวลผลเป็นแบบฟอร์ม SOAP...</p>
         </div>
 
         <div id="loadingState" class="hidden absolute inset-0 bg-slate-900/90 z-20 flex flex-col items-center justify-center rounded-xl">
-          <div class="w-10 h-10 md:w-12 md:h-12 border-4 border-violet-900 border-t-violet-400 rounded-full animate-spin mb-4"></div>
-          <p class="text-violet-300 animate-pulse text-sm md:text-base">กำลังวิเคราะห์...</p>
+          <div class="w-10 h-10 border-4 border-violet-900 border-t-violet-400 rounded-full animate-spin mb-4"></div>
+          <p class="text-violet-300 animate-pulse text-sm">กำลังสกัดข้อมูลเชิงลึก...</p>
         </div>
 
         <div id="reportContent" class="hidden space-y-4 pb-4">
-          <div class="grid grid-cols-2 gap-3 md:gap-4 mb-2">
-            <div class="bg-slate-800/50 p-3 md:p-4 rounded-xl border border-slate-700 text-center">
-              <div class="text-[10px] md:text-xs text-slate-400 uppercase">ความเครียด</div>
-              <div id="stressScore" class="text-xl md:text-2xl font-bold text-red-400 mt-1">- %</div>
-            </div>
-            <div class="bg-slate-800/50 p-3 md:p-4 rounded-xl border border-slate-700 text-center">
-               <div class="text-[10px] md:text-xs text-slate-400 uppercase">ความมั่นคง</div>
-               <div id="stabilityScore" class="text-xl md:text-2xl font-bold text-emerald-400 mt-1">- %</div>
-            </div>
+          
+          <div class="bg-black/30 p-3 rounded-xl border border-white/5 flex flex-wrap gap-2 items-center">
+            <span class="text-xs text-slate-400 mr-2">การวิเคราะห์อารมณ์:</span>
+            <span id="badgeSentiment" class="px-2 py-1 rounded text-xs font-bold bg-slate-700 text-white">-</span>
+            <span id="badgeEmotion" class="px-2 py-1 rounded text-xs font-bold bg-slate-700 text-white">-</span>
           </div>
 
-          <div class="report-box">
-            <label class="report-label"><i class="fa-solid fa-bullseye mr-2"></i>แก่นปัญหา</label>
-            <p id="textCore" class="text-slate-300 text-sm leading-relaxed">-</p>
+          <div class="report-box border-blue-500/30 bg-blue-500/5">
+            <label class="report-label text-blue-400"><span class="font-bold text-lg mr-2">S</span> Subjective (ข้อมูลจากผู้รับคำปรึกษา)</label>
+            <p id="textS" class="text-slate-300 text-sm leading-relaxed">-</p>
           </div>
 
-          <div class="report-box">
-             <label class="report-label"><i class="fa-solid fa-magnifying-glass mr-2"></i>สาเหตุ</label>
-             <p id="textCause" class="text-slate-300 text-sm leading-relaxed">-</p>
+          <div class="report-box border-orange-500/30 bg-orange-500/5">
+             <label class="report-label text-orange-400"><span class="font-bold text-lg mr-2">O</span> Objective (ข้อมูลเชิงประจักษ์/น้ำเสียง)</label>
+             <p id="textO" class="text-slate-300 text-sm leading-relaxed">-</p>
           </div>
 
-          <div class="report-box" style="border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.05);">
-             <label class="report-label" style="color: #34d399;"><i class="fa-solid fa-lightbulb mr-2"></i>แนวทางแก้ไข</label>
-             <div id="textSolution" class="text-slate-300 text-sm space-y-2 pl-2">-</div>
+          <div class="report-box border-fuchsia-500/30 bg-fuchsia-500/5">
+             <label class="report-label text-fuchsia-400"><span class="font-bold text-lg mr-2">A</span> Assessment (การประเมินปัญหาและความเสี่ยง)</label>
+             <p id="textA" class="text-slate-300 text-sm leading-relaxed mb-2">-</p>
+             <div class="flex items-center gap-2 mt-2 pt-2 border-t border-white/10">
+                 <span class="text-xs text-slate-400">ระดับความรุนแรง:</span>
+                 <span id="riskLevel" class="text-xs font-bold px-2 py-1 rounded bg-slate-700">-</span>
+             </div>
           </div>
 
-          <div class="mt-4 pt-4 border-t border-white/10">
-            <button onclick="window.print()" class="w-full py-3 rounded-lg border border-slate-600 text-slate-300 text-sm hover:bg-slate-800 hover:text-white transition-all font-bold">
-              <i class="fa-solid fa-print mr-2"></i> Export PDF
+          <div class="report-box border-emerald-500/30 bg-emerald-500/5">
+             <label class="report-label text-emerald-400"><span class="font-bold text-lg mr-2">P</span> Plan (แผนการดูแลและแก้ปัญหา)</label>
+             <div id="textP" class="text-slate-300 text-sm space-y-2 pl-2">-</div>
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-white/10 flex gap-2">
+            <button class="flex-1 py-3 rounded-lg border border-slate-600 text-slate-300 text-sm hover:bg-slate-800 hover:text-white transition-all font-bold">
+              <i class="fa-solid fa-database mr-2"></i> บันทึกลงฐานข้อมูล
+            </button>
+            <button onclick="window.print()" class="flex-1 py-3 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm transition-all font-bold">
+              <i class="fa-solid fa-print mr-2"></i> พิมพ์ PDF
             </button>
           </div>
         </div>
