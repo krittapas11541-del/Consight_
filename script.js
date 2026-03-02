@@ -7,27 +7,25 @@ const dashboardPage = document.getElementById('dashboardPage');
 
 loginForm.addEventListener('submit', (e) => {
   e.preventDefault();
+  const counselor = document.getElementById('inputCounselor').value;
   const name = document.getElementById('inputName').value;
   const cls = document.getElementById('inputClass').value;
   const id = document.getElementById('inputID').value;
-  const consent = document.getElementById('consentCheck').checked;
 
-  if(name && cls && id && consent) {
+  if(name && cls && id && counselor) {
     loginPage.classList.add('hidden');
     dashboardPage.classList.remove('hidden');
     dashboardPage.classList.add('animate-fade-in');
-    
     dashboardPage.style.display = 'grid';
     
-    document.getElementById('displayName').innerText = name;
-    document.getElementById('displayClass').innerText = "ชั้น: " + cls;
-    document.getElementById('displayID').innerText = "รหัส: " + id;
+    document.getElementById('displayName').innerText = `${name} (${cls} - ${id})`;
+    document.getElementById('displayCounselor').innerText = counselor;
     document.getElementById('currentDate').innerText = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric'});
   }
 });
 
 // ==========================================
-// 2. MIC & SPEECH RECOGNITION SETUP
+// 2. MIC, FILE UPLOAD & RECOGNITION
 // ==========================================
 const micBtn = document.getElementById('micBtn');
 const pulseRing = document.getElementById('pulseRing');
@@ -35,6 +33,7 @@ const micLabel = document.getElementById('micLabel');
 const resultArea = document.getElementById('result');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const clearBtn = document.getElementById('clearBtn');
+const audioUpload = document.getElementById('audioUpload');
   
 const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 recognition.lang = 'th-TH';
@@ -42,6 +41,7 @@ recognition.continuous = true;
 recognition.interimResults = true;
 let isRecording = false;
 
+// จัดการปุ่ม Mic
 micBtn.onclick = () => { 
   if(!isRecording) recognition.start(); 
   else recognition.stop(); 
@@ -61,12 +61,7 @@ recognition.onend = () => {
   pulseRing.classList.add('hidden');
   micLabel.innerText = "แตะเพื่อเริ่มพูด";
   micLabel.classList.remove('text-red-400');
-  
-  if(resultArea.value.trim().length > 0) {
-    analyzeBtn.disabled = false;
-    analyzeBtn.classList.remove('bg-slate-700', 'text-slate-400');
-    analyzeBtn.classList.add('bg-emerald-500', 'text-white');
-  }
+  checkTextToEnableButton();
 };
 
 recognition.onresult = (e) => {
@@ -76,6 +71,29 @@ recognition.onresult = (e) => {
   }
   resultArea.value = t;
 };
+
+// จัดการ Upload ไฟล์เสียง (Mockup STT Process)
+audioUpload.addEventListener('change', (e) => {
+    if(e.target.files.length > 0) {
+        const file = e.target.files[0];
+        micLabel.innerText = "กำลังถอดเสียงจากไฟล์...";
+        
+        // จำลองเวลาในการใช้ AI STT (เช่น Whisper) ถอดเสียง 1.5 วินาที
+        setTimeout(() => {
+            resultArea.value += `[ถอดเสียงจากไฟล์ ${file.name}] ...นักเรียนรู้สึกเครียดและกังวลเกี่ยวกับการสอบเข้ามหาวิทยาลัย พ่อแม่อยากให้เรียนหมอแต่ตัวเองอยากเรียนนิเทศศาสตร์ พยายามคุยแล้วแต่พ่อแม่ไม่ฟังจนรู้สึกไม่อยากกลับบ้าน...`;
+            micLabel.innerText = "แตะเพื่อเริ่มพูด";
+            checkTextToEnableButton();
+        }, 1500);
+    }
+});
+
+function checkTextToEnableButton() {
+    if(resultArea.value.trim().length > 0) {
+        analyzeBtn.disabled = false;
+        analyzeBtn.classList.remove('bg-slate-700', 'text-slate-400');
+        analyzeBtn.classList.add('bg-emerald-500', 'text-white');
+    }
+}
 
 // เคลียร์ข้อความ
 clearBtn.addEventListener('click', () => {
@@ -88,101 +106,76 @@ clearBtn.addEventListener('click', () => {
 });
 
 // ==========================================
-// 3. KNOWLEDGE BASE & SCENARIOS (ไม่ได้ใช้แล้ว แต่เก็บไว้เป็นข้อมูลอ้างอิง)
-// ==========================================
-// ... (คุณสามารถเก็บตัวแปร scenarios ไว้เหมือนเดิมได้เลยครับ) ...
-
-// ==========================================
-// 4. ANALYZE ACTION (เชื่อมต่อ Gemini API โดยตรง)
+// 3. ANALYZE ACTION (เชื่อมต่อ Backend ของเราเอง)
 // ==========================================
 analyzeBtn.onclick = async () => {
   const text = resultArea.value;
   if(!text) return;
 
-  // 1. ซ่อนหน้าต่างอื่นๆ และแสดงหน้า Loading
   document.getElementById('emptyState').classList.add('hidden');
   document.getElementById('loadingState').classList.remove('hidden');
   document.getElementById('reportContent').classList.add('hidden');
 
-  // 2. ตั้งค่า Gemini API
-  // ⚠️ สำคัญ: นำ API Key ของคุณมาใส่ตรงนี้
-  const apiKey = "AIzaSyAX0HxQd8sY1uHRjWe-BbFIBpuRJT9LxBs"; 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-  // ปรับ Prompt ให้ส่ง JSON ออกมาตรงกับตัวแปรในโค้ดเดิมของคุณ
-  const prompt = `
-    คุณคือระบบ Consight ผู้ช่วยครูแนะแนววิเคราะห์บทสนทนาของนักเรียน
-    จงวิเคราะห์ข้อความต่อไปนี้: "${text}"
-    และคืนค่ากลับมาเป็นรูปแบบ JSON เท่านั้น โดยมีโครงสร้างดังนี้:
-    {
-      "stressRisk": ตัวเลขความเสี่ยงจาก 0-100 ประเมินจากความเครียดหรืออารมณ์เชิงลบในข้อความ,
-      "core": "สรุปแก่นของปัญหาคืออะไร (สั้นๆ กระชับ)",
-      "cause": "สาเหตุหลักของปัญหา",
-      "solutions": ["แนวทางรับมือข้อ 1", "แนวทางรับมือข้อ 2", "แนวทางรับมือข้อ 3"]
-    }
-  `;
-
-  const requestBody = {
-    contents: [{ parts: [{ text: prompt }] }],
-    generationConfig: { 
-      response_mime_type: "application/json" // บังคับให้เป็น JSON เสมอ
-    }
-  };
+  // 1. เปลี่ยน URL จาก Make.com มาเป็น Backend บนเครื่องของเรา
+  const backendUrl = 'http://localhost:3000/api/analyze'; 
 
   try {
-    // 3. ยิง Request ไปที่ Gemini
-    const response = await fetch(url, {
+    const response = await fetch(backendUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
+      // 2. ส่งข้อมูลให้ตรงกับที่ Backend รับ (ใช้คำว่า "text" แทน "message")
+      body: JSON.stringify({
+        text: text 
+      })
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP Error Status: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
 
-    // 4. รับผลลัพธ์กลับมา
-    const responseData = await response.json(); 
-    // ดึงข้อความ JSON ออกมาจากโครงสร้าง Response ของ Gemini
-    const resultText = responseData.candidates[0].content.parts[0].text;
-    const data = JSON.parse(resultText); 
+    // 3. Backend ของเราส่งกลับมาเป็น JSON สำเร็จรูปแล้ว ไม่ต้องใช้ replace string เหมือน Make.com
+    const data = await response.json(); 
 
-    // ซ่อนหน้า Loading และแสดงหน้า Report
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('reportContent').classList.remove('hidden');
     
-    // 5. นำข้อมูลจาก JSON มาแสดงผลบนหน้าจอ (ใช้ Logic เดิมของคุณทั้งหมด)
-    const risk = data.stressRisk || 0;
-    document.getElementById('stressScore').innerText = risk + "%";
-    document.getElementById('stabilityScore').innerText = (100 - risk) + "%";
+    // --- อัปเดต UI ให้ตรงกับ SOAP Form ---
     
-    const stressEl = document.getElementById('stressScore');
-    if(risk > 70) stressEl.className = "text-xl md:text-2xl font-bold text-red-500 mt-1";
-    else if(risk > 40) stressEl.className = "text-xl md:text-2xl font-bold text-amber-400 mt-1";
-    else stressEl.className = "text-xl md:text-2xl font-bold text-emerald-400 mt-1";
+    // Emotion & Sentiment
+    document.getElementById('badgeSentiment').innerText = data.sentiment || "ไม่ระบุ";
+    document.getElementById('badgeSentiment').className = `px-2 py-1 rounded text-xs font-bold ${data.sentiment === 'เชิงบวก' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`;
+    
+    document.getElementById('badgeEmotion').innerText = data.emotion || "-";
 
-    document.getElementById('textCore').innerText = data.core || "-";
-    document.getElementById('textCause').innerText = data.cause || "-";
+    // SOAP Elements
+    document.getElementById('textS').innerText = data.subjective || text;
+    document.getElementById('textO').innerText = data.objective || "-";
+    document.getElementById('textA').innerText = data.assessment || "-";
     
-    if (data.solutions && Array.isArray(data.solutions)) {
-      document.getElementById('textSolution').innerHTML = data.solutions.map(s => 
+    const risk = data.riskLevel || "ปานกลาง";
+    document.getElementById('riskLevel').innerText = risk;
+    
+    // ปรับสีป้ายแจ้งเตือนความเสี่ยง
+    if(risk === 'สูง') {
+        document.getElementById('riskLevel').className = "text-xs font-bold px-2 py-1 rounded bg-red-500 text-white";
+    } else if (risk === 'ปานกลาง') {
+        document.getElementById('riskLevel').className = "text-xs font-bold px-2 py-1 rounded bg-amber-500 text-white";
+    } else {
+        document.getElementById('riskLevel').className = "text-xs font-bold px-2 py-1 rounded bg-emerald-500 text-white";
+    }
+
+    const planData = data.plan || [];
+    if (Array.isArray(planData) && planData.length > 0) {
+      document.getElementById('textP').innerHTML = planData.map(s => 
         `<div class="flex items-start gap-2"><span class="text-emerald-400 mt-1">•</span><span>${s}</span></div>`
       ).join('');
     } else {
-      document.getElementById('textSolution').innerHTML = "-";
+      document.getElementById('textP').innerHTML = "-";
     }
 
   } catch (error) {
-    console.error('❌ Error Fetching to Gemini:', error);
-    alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ AI กรุณาลองใหม่อีกครั้ง');
-    
+    console.error('Error:', error);
+    // เปลี่ยนข้อความแจ้งเตือนให้สอดคล้องกับ Backend
+    alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ กรุณาตรวจสอบว่า Backend (node server.js) เปิดทำงานอยู่หรือไม่');
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('emptyState').classList.remove('hidden');
   }
 };
-
-
-
-
-
-
