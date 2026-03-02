@@ -119,7 +119,7 @@ analyzeBtn.onclick = async () => {
   document.getElementById('reportContent').classList.add('hidden');
 
   // ⚠️ ตรวจสอบ URL ตรงนี้ให้ดี ต้องขึ้นต้นด้วย https:// และไม่มีตัวอักษรอื่นปนอยู่ด้านหน้า
-  const webhookUrl = 'https://hook.us2.make.com/756y9kdvd15rm8y8hyr5xcs191lxjo8n'; 
+  const webhookUrl = 'https://hook.us2.make.com/756y9kdvd15rm8y8hyr5xcs191lxjo8n' 
 
   try {
     const response = await fetch(webhookUrl, {
@@ -183,3 +183,4 @@ analyzeBtn.onclick = async () => {
     document.getElementById('emptyState').classList.remove('hidden');
   }
 };
+
