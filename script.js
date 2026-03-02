@@ -106,7 +106,7 @@ clearBtn.addEventListener('click', () => {
 });
 
 // ==========================================
-// 3. ANALYZE ACTION (เชื่อมต่อ Backend ของเราเอง)
+// 3. ANALYZE ACTION (เชื่อมต่อ Make.com Webhook)
 // ==========================================
 analyzeBtn.onclick = async () => {
   const text = resultArea.value;
@@ -116,23 +116,28 @@ analyzeBtn.onclick = async () => {
   document.getElementById('loadingState').classList.remove('hidden');
   document.getElementById('reportContent').classList.add('hidden');
 
-  // 1. เปลี่ยน URL จาก Make.com มาเป็น Backend บนเครื่องของเรา
-  const backendUrl = 'http://localhost:3000/api/analyze'; 
+  // 1. เปลี่ยน URL เป็น Make.com Webhook
+  // ⚠️ อย่าลืมแก้เป็น URL Webhook ของคุณเองนะครับ
+  const webhookUrl = '(https://hook.us2.make.com/756y9kdvd15rm8y8hyr5xcs191lxjo8n)'; 
 
   try {
-    const response = await fetch(backendUrl, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // 2. ส่งข้อมูลให้ตรงกับที่ Backend รับ (ใช้คำว่า "text" แทน "message")
+      // 2. ส่งข้อมูลไปให้ Make.com (ส่งข้อมูลผู้ให้คำปรึกษา/นักเรียนไปด้วยเผื่อต้องบันทึกลง Sheet)
       body: JSON.stringify({
+        counselor: document.getElementById('displayCounselor').innerText,
+        student: document.getElementById('displayName').innerText,
         text: text 
       })
     });
 
     if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
 
-    // 3. Backend ของเราส่งกลับมาเป็น JSON สำเร็จรูปแล้ว ไม่ต้องใช้ replace string เหมือน Make.com
-    const data = await response.json(); 
+    // 3. รับและทำความสะอาดข้อมูล (ลบ ```json ที่ AI อาจจะแถมมา)
+    const rawText = await response.text(); 
+    const cleanText = rawText.replace(/```json/ig, '').replace(/```/g, '').trim();
+    const data = JSON.parse(cleanText); 
 
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('reportContent').classList.remove('hidden');
@@ -173,8 +178,7 @@ analyzeBtn.onclick = async () => {
 
   } catch (error) {
     console.error('Error:', error);
-    // เปลี่ยนข้อความแจ้งเตือนให้สอดคล้องกับ Backend
-    alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์ กรุณาตรวจสอบว่า Backend (node server.js) เปิดทำงานอยู่หรือไม่');
+    alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Make.com กรุณาตรวจสอบ URL หรือ Scenario');
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('emptyState').classList.remove('hidden');
   }
