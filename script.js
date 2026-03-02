@@ -93,7 +93,7 @@ clearBtn.addEventListener('click', () => {
 // ... (คุณสามารถเก็บตัวแปร scenarios ไว้เหมือนเดิมได้เลยครับ) ...
 
 // ==========================================
-// 4. ANALYZE ACTION (เชื่อมต่อ Google Apps Script)
+// 4. ANALYZE ACTION (เชื่อมต่อ Gemini API โดยตรง)
 // ==========================================
 analyzeBtn.onclick = async () => {
   const text = resultArea.value;
@@ -104,37 +104,54 @@ analyzeBtn.onclick = async () => {
   document.getElementById('loadingState').classList.remove('hidden');
   document.getElementById('reportContent').classList.add('hidden');
 
-  // 2. กำหนด URL ของ Google Apps Script
-  // ⚠️ สำคัญ: นำ URL ที่ได้จากการ Deploy ของ GAS (ลงท้ายด้วย /exec) มาวางแทนที่ด้านล่างนี้
-  const webhookUrl = 'https://script.google.com/macros/s/AKfycby06vYVFu44wYoS5vUnuxsvXvUEn4wJRMHqExjRyyzVkbK6N9FZNRixxfMSsBnH0cCE/exec'; 
+  // 2. ตั้งค่า Gemini API
+  // ⚠️ สำคัญ: นำ API Key ของคุณมาใส่ตรงนี้
+  const apiKey = "AIzaSyAX0HxQd8sY1uHRjWe-BbFIBpuRJT9LxBs"; 
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+  // ปรับ Prompt ให้ส่ง JSON ออกมาตรงกับตัวแปรในโค้ดเดิมของคุณ
+  const prompt = `
+    คุณคือระบบ Consight ผู้ช่วยครูแนะแนววิเคราะห์บทสนทนาของนักเรียน
+    จงวิเคราะห์ข้อความต่อไปนี้: "${text}"
+    และคืนค่ากลับมาเป็นรูปแบบ JSON เท่านั้น โดยมีโครงสร้างดังนี้:
+    {
+      "stressRisk": ตัวเลขความเสี่ยงจาก 0-100 ประเมินจากความเครียดหรืออารมณ์เชิงลบในข้อความ,
+      "core": "สรุปแก่นของปัญหาคืออะไร (สั้นๆ กระชับ)",
+      "cause": "สาเหตุหลักของปัญหา",
+      "solutions": ["แนวทางรับมือข้อ 1", "แนวทางรับมือข้อ 2", "แนวทางรับมือข้อ 3"]
+    }
+  `;
+
+  const requestBody = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { 
+      response_mime_type: "application/json" // บังคับให้เป็น JSON เสมอ
+    }
+  };
 
   try {
-    // 3. ยิง Request ไปที่ GAS
-    const response = await fetch(webhookUrl, {
+    // 3. ยิง Request ไปที่ Gemini
+    const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        // ใช้ text/plain เพื่อกันไม่ให้เบราว์เซอร์บล็อกการเชื่อมต่อ (แก้ CORS Error 100%)
-        'Content-Type': 'text/plain;charset=utf-8' 
-      },
-      body: JSON.stringify({
-        studentName: document.getElementById('displayName').innerText,
-        studentId: document.getElementById('inputID').value,
-        message: text 
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
       throw new Error(`HTTP Error Status: ${response.status}`);
     }
 
-    // 4. รับผลลัพธ์กลับมา (GAS จะส่งกลับมาเป็น JSON สำเร็จรูปพร้อมใช้)
-    const data = await response.json(); 
+    // 4. รับผลลัพธ์กลับมา
+    const responseData = await response.json(); 
+    // ดึงข้อความ JSON ออกมาจากโครงสร้าง Response ของ Gemini
+    const resultText = responseData.candidates[0].content.parts[0].text;
+    const data = JSON.parse(resultText); 
 
     // ซ่อนหน้า Loading และแสดงหน้า Report
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('reportContent').classList.remove('hidden');
     
-    // 5. นำข้อมูลจาก JSON มาแสดงผลบนหน้าจอ
+    // 5. นำข้อมูลจาก JSON มาแสดงผลบนหน้าจอ (ใช้ Logic เดิมของคุณทั้งหมด)
     const risk = data.stressRisk || 0;
     document.getElementById('stressScore').innerText = risk + "%";
     document.getElementById('stabilityScore').innerText = (100 - risk) + "%";
@@ -156,7 +173,7 @@ analyzeBtn.onclick = async () => {
     }
 
   } catch (error) {
-    console.error('❌ Error Fetching to GAS:', error);
+    console.error('❌ Error Fetching to Gemini:', error);
     alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ AI กรุณาลองใหม่อีกครั้ง');
     
     document.getElementById('loadingState').classList.add('hidden');
