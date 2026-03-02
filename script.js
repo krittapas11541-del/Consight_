@@ -73,19 +73,21 @@ recognition.onresult = (e) => {
 };
 
 // จัดการ Upload ไฟล์เสียง (Mockup STT Process)
-audioUpload.addEventListener('change', (e) => {
-    if(e.target.files.length > 0) {
-        const file = e.target.files[0];
-        micLabel.innerText = "กำลังถอดเสียงจากไฟล์...";
-        
-        // จำลองเวลาในการใช้ AI STT (เช่น Whisper) ถอดเสียง 1.5 วินาที
-        setTimeout(() => {
-            resultArea.value += `[ถอดเสียงจากไฟล์ ${file.name}] ...นักเรียนรู้สึกเครียดและกังวลเกี่ยวกับการสอบเข้ามหาวิทยาลัย พ่อแม่อยากให้เรียนหมอแต่ตัวเองอยากเรียนนิเทศศาสตร์ พยายามคุยแล้วแต่พ่อแม่ไม่ฟังจนรู้สึกไม่อยากกลับบ้าน...`;
-            micLabel.innerText = "แตะเพื่อเริ่มพูด";
-            checkTextToEnableButton();
-        }, 1500);
-    }
-});
+if (audioUpload) {
+    audioUpload.addEventListener('change', (e) => {
+        if(e.target.files.length > 0) {
+            const file = e.target.files[0];
+            micLabel.innerText = "กำลังถอดเสียงจากไฟล์...";
+            
+            // จำลองเวลาในการใช้ AI STT ถอดเสียง 1.5 วินาที
+            setTimeout(() => {
+                resultArea.value += `[ถอดเสียงจากไฟล์ ${file.name}] ...นักเรียนรู้สึกเครียดและกังวลเกี่ยวกับการสอบเข้ามหาวิทยาลัย พ่อแม่อยากให้เรียนหมอแต่ตัวเองอยากเรียนนิเทศศาสตร์ พยายามคุยแล้วแต่พ่อแม่ไม่ฟังจนรู้สึกไม่อยากกลับบ้าน...`;
+                micLabel.innerText = "แตะเพื่อเริ่มพูด";
+                checkTextToEnableButton();
+            }, 1500);
+        }
+    });
+}
 
 function checkTextToEnableButton() {
     if(resultArea.value.trim().length > 0) {
@@ -116,15 +118,13 @@ analyzeBtn.onclick = async () => {
   document.getElementById('loadingState').classList.remove('hidden');
   document.getElementById('reportContent').classList.add('hidden');
 
-  // 1. เปลี่ยน URL เป็น Make.com Webhook
-  // ⚠️ อย่าลืมแก้เป็น URL Webhook ของคุณเองนะครับ
-  const webhookUrl = '(https://hook.us2.make.com/756y9kdvd15rm8y8hyr5xcs191lxjo8n)'; 
+  // ⚠️ ตรวจสอบ URL ตรงนี้ให้ดี ต้องขึ้นต้นด้วย https:// และไม่มีตัวอักษรอื่นปนอยู่ด้านหน้า
+  const webhookUrl = 'https://hook.us2.make.com/756y9kdvd15rm8y8hyr5xcs191lxjo8n'; 
 
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // 2. ส่งข้อมูลไปให้ Make.com (ส่งข้อมูลผู้ให้คำปรึกษา/นักเรียนไปด้วยเผื่อต้องบันทึกลง Sheet)
       body: JSON.stringify({
         counselor: document.getElementById('displayCounselor').innerText,
         student: document.getElementById('displayName').innerText,
@@ -134,7 +134,7 @@ analyzeBtn.onclick = async () => {
 
     if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
 
-    // 3. รับและทำความสะอาดข้อมูล (ลบ ```json ที่ AI อาจจะแถมมา)
+    // รับและทำความสะอาดข้อมูล JSON จาก Make.com
     const rawText = await response.text(); 
     const cleanText = rawText.replace(/```json/ig, '').replace(/```/g, '').trim();
     const data = JSON.parse(cleanText); 
@@ -178,7 +178,7 @@ analyzeBtn.onclick = async () => {
 
   } catch (error) {
     console.error('Error:', error);
-    alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Make.com กรุณาตรวจสอบ URL หรือ Scenario');
+    alert('เกิดข้อผิดพลาดในการเชื่อมต่อกับ Make.com: ' + error.message);
     document.getElementById('loadingState').classList.add('hidden');
     document.getElementById('emptyState').classList.remove('hidden');
   }
