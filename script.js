@@ -106,7 +106,7 @@ analyzeBtn.onclick = async () => {
 
   // 2. กำหนด URL ของ Google Apps Script
   // ⚠️ สำคัญ: นำ URL ที่ได้จากการ Deploy ของ GAS (ลงท้ายด้วย /exec) มาวางแทนที่ด้านล่างนี้
-  const webhookUrl = 'https://script.google.com/macros/s/AKfycbybMEZCJsWUh516U2W0YA-lhnQxg0Dcin49y2BUIdTiahdXAG6Ef_Jxh0n62fibq6ep4Q/exec'; 
+  const webhookUrl = 'https://script.google.com/macros/s/AKfycby06vYVFu44wYoS5vUnuxsvXvUEn4wJRMHqExjRyyzVkbK6N9FZNRixxfMSsBnH0cCE/exec'; 
 
   try {
     // 3. ยิง Request ไปที่ GAS
@@ -163,6 +163,7 @@ analyzeBtn.onclick = async () => {
     document.getElementById('emptyState').classList.remove('hidden');
   }
 };
+
 
 
 
