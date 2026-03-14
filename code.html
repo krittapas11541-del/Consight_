@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Consight - Student Insight (Responsive)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: 'Kanit', sans-serif;
+      /* Theme: Dark Purple Atmosphere */
+      background: radial-gradient(circle at top left, #0f172a, #020617);
+      background-attachment: fixed;
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Glassmorphism Card Style */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.5rem;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Input Field Style in Dark Mode */
+    .dark-input {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: white;
+      transition: all 0.3s ease;
+    }
+    .dark-input:focus {
+      border-color: #8b5cf6; /* Violet-500 */
+      outline: none;
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+    }
+
+    /* Mic Button Animation - Responsive Size */
+    .mic-btn {
+      width: clamp(120px, 25vw, 180px); /* ปรับขนาดให้ยืดหยุ่น */
+      height: clamp(120px, 25vw, 180px);
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366F1, #d946ef);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+      position: relative;
+      transition: transform 0.2s;
+      flex-shrink: 0; /* ป้องกันปุ่มบี้ */
+    }
+    .mic-btn:active { transform: scale(0.95); }
+    .mic-btn.recording { box-shadow: 0 0 50px rgba(239, 68, 68, 0.6); background: linear-gradient(135deg, #ef4444, #f97316); }
+    .mic-btn i { font-size: clamp(2.5rem, 5vw, 3.5rem); color: white; z-index: 10; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.6); }
+
+    /* Report Box Styles */
+    .report-box {
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      background: rgba(139, 92, 246, 0.05);
+      border-radius: 1rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .report-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #a78bfa; /* Violet-400 */
+      margin-bottom: 0.5rem;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4 lg:p-6 min-h-screen">
+
+  <div id="loginPage" class="w-full max-w-md glass-card p-6 md:p-8 flex flex-col items-center gap-6 animate-fade-in my-auto">
+    
+    <div class="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-500/30 mb-2">
+      <i class="fa-solid fa-graduation-cap text-3xl md:text-4xl text-white"></i>
+    </div>
+    
+    <div class="text-center">
+      <h2 class="text-2xl font-bold text-white">ลงทะเบียน</h2>
+      <p class="text-slate-400 text-sm">กรอกข้อมูลเพื่อเริ่มใช้งาน</p>
+    </div>
+
+    <form id="loginForm" class="w-full space-y-4">
+      <div>
+        <label class="text-xs text-slate-400 ml-2">ชื่อ - นามสกุล</label>
+        <input type="text" id="inputName" required class="w-full p-3 rounded-xl dark-input" placeholder="เช่น นายไบรท์ กฤตภาส">
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+           <label class="text-xs text-slate-400 ml-2">ระดับชั้น</label>
+           <select id="inputClass" required class="w-full p-3 rounded-xl dark-input appearance-none">
+             <option value="" class="text-black">เลือกชั้น</option>
+             <option value="ม.1" class="text-black">ม.1</option>
+             <option value="ม.2" class="text-black">ม.2</option>
+             <option value="ม.3" class="text-black">ม.3</option>
+             <option value="ม.4" class="text-black">ม.4</option>
+             <option value="ม.5" class="text-black">ม.5</option>
+             <option value="ม.6" class="text-black">ม.6</option>
+           </select>
+        </div>
+        <div>
+           <label class="text-xs text-slate-400 ml-2">รหัสประจำตัว</label>
+           <input type="number" id="inputID" required class="w-full p-3 rounded-xl dark-input" placeholder="xxxxx">
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 pt-2">
+        <div class="flex items-center h-5">
+          <input id="consentCheck" type="checkbox" required class="w-5 h-5 border border-slate-500 rounded bg-slate-800 focus:ring-3 focus:ring-violet-300">
+        </div>
+        <label for="consentCheck" class="text-sm font-medium text-slate-300 leading-tight">
+          ยอมรับ <a href="#" class="text-violet-400 underline">นโยบายความเป็นส่วนตัว</a>
+        </label>
+      </div>
+
+      <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-xl text-white font-bold text-lg shadow-lg hover:brightness-110 transition-all active:scale-95 mt-4">
+        เข้าสู่ระบบ
+      </button>
+    </form>
+  </div>
+
+
+  <div id="dashboardPage" class="hidden w-full max-w-7xl grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-auto lg:h-[90vh] pb-10 lg:pb-0">
+    
+    <div class="order-1 lg:col-span-5 glass-card p-6 flex flex-col items-center relative overflow-hidden shrink-0">
+      <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-violet-500/5 to-transparent pointer-events-none"></div>
+      <div class="w-full flex justify-between items-center mb-6 z-10">
+        <div class="flex items-center gap-2">
+          <div class="w-1.5 h-6 bg-fuchsia-500 rounded-full"></div>
+          <h2 class="text-lg font-bold">บันทึกเสียง</h2>
+        </div>
+        <div class="text-[10px] md:text-xs font-mono text-slate-400 bg-slate-800/50 px-3 py-1 rounded-full">AI Mode</div>
+      </div>
+      <div class="w-full flex-1 flex flex-col justify-center items-center gap-4 z-10">
+        <div class="py-4">
+            <button id="micBtn" class="mic-btn">
+            <i class="fa-solid fa-microphone"></i>
+            <span class="absolute inset-0 rounded-full border-2 border-white/30 animate-ping opacity-75 hidden" id="pulseRing"></span>
+            </button>
+
+            <div id="timerDisplay" class="text-fuchsia-400 font-mono text-lg mt-2 font-bold opacity-0 transition-opacity">00:00</div>
+        </div>
+        
+        <div class="text-center mb-2">
+          <h3 id="micLabel" class="text-xl font-bold text-white">แตะเพื่อเริ่มพูด</h3>
+          <p id="statusText" class="text-slate-400 text-sm">ระบบพร้อมรับฟังปัญหาของคุณ</p>
+        </div>
+        <div class="w-full bg-black/20 rounded-2xl p-4 border border-white/5 relative group">
+          <textarea id="result" class="w-full h-24 lg:h-32 bg-transparent text-slate-200 resize-none focus:outline-none custom-scroll placeholder-slate-600 text-sm md:text-base" placeholder="พูดหรือพิมพ์ข้อความ..."></textarea>
+          <button onclick="clearText()" class="absolute bottom-2 right-4 text-xs text-slate-500 hover:text-red-400 p-1">
+            <i class="fa-solid fa-trash"></i> ล้าง
+          </button>
+        </div>
+        <button id="analyzeBtn" disabled class="w-full py-3.5 bg-slate-700 text-slate-400 rounded-xl font-bold text-base md:text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-emerald-600 hover:text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] mt-2">
+          <i class="fa-solid fa-bolt"></i> <span>ประมวลผล (Analyze)</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="order-2 lg:col-span-7 glass-card p-5 lg:p-6 flex flex-col relative overflow-hidden h-full">
+      <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-4 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-tr from-slate-700 to-slate-600 border-2 border-slate-500 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-user text-xl md:text-3xl text-slate-300"></i>
+          </div>
+          <div class="overflow-hidden">
+            <h2 id="displayName" class="text-lg md:text-2xl font-bold text-white truncate">...</h2>
+            <div class="flex flex-wrap gap-2 text-xs md:text-sm text-slate-400 mt-1">
+              <span id="displayClass" class="bg-white/10 px-2 py-0.5 rounded whitespace-nowrap">ชั้น: -</span>
+              <span id="displayID" class="bg-white/10 px-2 py-0.5 rounded whitespace-nowrap">รหัส: -</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-right shrink-0 ml-2">
+          <div class="text-fuchsia-400 font-bold uppercase tracking-widest text-[10px] md:text-sm">Insight Report</div>
+          <div id="currentDate" class="text-slate-500 text-[10px] md:text-xs"></div>
+        </div>
+      </div>
+
+      <div class="flex-1 lg:overflow-y-auto custom-scroll lg:pr-2 relative min-h-[300px]">
+        <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center text-slate-600 space-y-4 opacity-50">
+          <i class="fa-solid fa-chart-line text-5xl md:text-6xl"></i>
+          <p class="text-sm md:text-base">รอผลการวิเคราะห์เพื่อแสดงข้อมูลเชิงลึก...</p>
+        </div>
+
+        <div id="loadingState" class="hidden absolute inset-0 bg-slate-900/90 z-20 flex flex-col items-center justify-center rounded-xl">
+          <div class="w-10 h-10 border-4 border-violet-900 border-t-violet-400 rounded-full animate-spin mb-4"></div>
+          <p class="text-violet-300 animate-pulse text-sm md:text-base">Gemini AI กำลังประมวลผลอารมณ์...</p>
+        </div>
+
+        <div id="reportContent" class="hidden space-y-6 pb-4 animate-fade-in">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-slate-800/40 p-4 rounded-xl border border-white/5 text-center">
+              <label class="text-[10px] text-slate-500 uppercase block mb-2">Emotion Mix</label>
+              <div class="h-32 flex justify-center">
+                <canvas id="emotionPieChart"></canvas>
+              </div>
+            </div>
+    
+            <div class="bg-slate-800/40 p-4 rounded-xl border border-white/5 text-center flex flex-col justify-center">
+              <label class="text-[10px] text-slate-500 uppercase block mb-2">Stress Level</label>
+              <div id="stressScore" class="text-5xl font-bold text-red-500 mt-2">- %</div>
+              <p class="text-[10px] text-slate-500 mt-2">ระดับความมั่นคงทางอารมณ์: <span id="stabilityScore" class="text-emerald-400">-%</span></p>
+            </div>
+          </div>
+
+          <div class="bg-slate-800/40 p-5 rounded-xl border border-white/5">
+            <label class="text-[10px] text-slate-500 uppercase block mb-4 tracking-widest text-violet-400 font-bold">การวิเคราะห์ระดับความเครียดรายช่วงเวลา (Stress Timeline Analysis)</label>
+    
+            <div class="flex flex-col md:flex-row gap-6 items-center">
+              <div class="w-full md:w-32 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/10 pb-4 md:pb-0 md:pr-6 shrink-0">
+                <label class="text-[10px] text-slate-500 uppercase mb-1">เวลาอัดทั้งหมด</label>
+                <div id="totalTimeDisplay" class="text-3xl font-bold text-violet-400 tabular-nums">00:00</div>
+              </div>
+
+              <div class="flex-1 w-full h-64"> 
+                <canvas id="stressTimelineChart"></canvas>
+              </div>
+            </div>
+          </div>                
+
+          <div class="report-box border-l-4 border-fuchsia-500 bg-fuchsia-500/5">
+            <label class="report-label text-fuchsia-400"><i class="fa-solid fa-brain mr-2"></i>แก่นปัญหา (Core Issue)</label>
+            <p id="textCore" class="text-white font-medium text-base">-</p>
+          </div>
+
+          <div class="bg-white/5 p-4 rounded-xl border border-white/5">
+            <h4 class="text-xs font-bold text-violet-400 uppercase mb-3 tracking-widest">SOAP Note Summary</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div><span class="text-slate-500 font-bold">Subjective:</span><p id="soap-s" class="text-slate-300 italic mt-1">-</p></div>
+              <div><span class="text-slate-500 font-bold">Objective:</span><p id="soap-o" class="text-slate-300 mt-1">-</p></div>
+              <div><span class="text-slate-500 font-bold">Assessment:</span><p id="soap-a" class="text-red-400 mt-1">-</p></div>
+              <div><span class="text-slate-500 font-bold">Plan:</span><p id="soap-p" class="text-emerald-400 mt-1">-</p></div>
+            </div>
+          </div>
+
+          <div class="report-box border-emerald-500/40 bg-emerald-500/5">
+             <label class="report-label" style="color: #34d399;"><i class="fa-solid fa-lightbulb mr-2"></i>แนวทางแก้ไขสำหรับครู</label>
+             <div id="textSolution" class="text-slate-300 text-sm space-y-2"> - </div>
+          </div>
+
+          <button onclick="window.print()" class="w-full py-3 rounded-lg border border-slate-600 text-slate-300 text-sm hover:bg-slate-800 transition-all font-bold">
+            <i class="fa-solid fa-print mr-2"></i> Export PDF Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- LOGIN LOGIC ---
+    const loginForm = document.getElementById('loginForm');
+    const loginPage = document.getElementById('loginPage');
+    const dashboardPage = document.getElementById('dashboardPage');
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('inputName').value;
+      const cls = document.getElementById('inputClass').value;
+      const id = document.getElementById('inputID').value;
+      const consent = document.getElementById('consentCheck').checked;
+
+      if(name && cls && id && consent) {
+        loginPage.classList.add('hidden');
+        dashboardPage.classList.remove('hidden');
+        dashboardPage.classList.add('animate-fade-in');
+        
+        // Use Grid display logic
+        dashboardPage.style.display = 'grid';
+        
+        document.getElementById('displayName').innerText = name;
+        document.getElementById('displayClass').innerText = "ชั้น: " + cls;
+        document.getElementById('displayID').innerText = "รหัส: " + id;
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('th-TH', { year:'numeric', month:'long', day:'numeric'});
+      }
+    });
+
+    // --- MIC & AI SETUP ---
+    
+    const micBtn = document.getElementById('micBtn');
+    const pulseRing = document.getElementById('pulseRing');
+    const micLabel = document.getElementById('micLabel');
+    const resultArea = document.getElementById('result');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    
+    let isRecording = false;
+    let allResults = []; // เปลี่ยนจาก string เป็น array เพื่อเก็บประโยคแยกกัน
+    let secondsElapsed = 0;
+    let timerInterval;
+
+    // ตั้งค่าตัวแปร (ใช้จากที่ประกาศไว้ในจุดที่ 3)
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'th-TH';
+    recognition.continuous = true;     // อัดต่อเนื่องไม่หยุดเอง
+    recognition.interimResults = true; // แสดงข้อความระหว่างพูดทันที
+
+    micBtn.onclick = () => { 
+        if(!isRecording) {
+            isRecording = true; 
+            allResults = []; // ล้างอาเรย์
+            resultArea.value = '';
+            secondsElapsed = 0;
+            
+            // แสดง UI
+            document.getElementById('timerDisplay').classList.remove('opacity-0');
+            micBtn.classList.add('recording');
+            pulseRing.classList.remove('hidden');
+            micLabel.innerText = "กำลังรับฟัง...";
+            micLabel.classList.add('text-red-400');
+
+            // เริ่มนาฬิกาที่นี่ที่เดียว!
+            clearInterval(timerInterval); // เคลียร์ของเก่าเพื่อความชัวร์
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                let m = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+                let s = (secondsElapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timerDisplay').innerText = `${m}:${s}`;
+            }, 1000);
+
+            recognition.start(); 
+        } else { 
+            isRecording = false; // ปิดสถานะเพื่อให้ Auto-Restart ไม่ทำงาน
+            recognition.stop(); 
+        } 
+    };
+
+    recognition.onstart = () => {
+        console.log("Recognition started..."); // ไม่ต้องใส่ setInterval ที่นี่แล้ว
+    };
+
+    recognition.onresult = (e) => {
+        let interimTranscript = '';
+        let currentSessionFinal = '';
+
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            let transcript = e.results[i][0].transcript;
+            if (e.results[i].isFinal) {
+                currentSessionFinal += transcript;
+            } else {
+                interimTranscript += transcript;
+            }
+        }
+
+        // แสดงผล: (ประโยคจากรอบก่อนๆ ใน Array) + (ประโยคที่เพิ่งจบในรอบนี้) + (ประโยคที่กำลังพูด)
+        const historyText = allResults.join('');
+        resultArea.value = historyText + currentSessionFinal + interimTranscript;
+
+        if(resultArea.value.length > 0) {
+            analyzeBtn.disabled = false;
+            analyzeBtn.classList.remove('bg-slate-700', 'text-slate-400');
+            analyzeBtn.classList.add('bg-emerald-500', 'text-white');
+        }
+    };
+    
+    recognition.onend = () => {
+        // ก่อนจะ Restart ให้ดึงค่าล่าสุดที่พูดจบแล้วไปเก็บใน Array
+        const currentTotalText = resultArea.value;
+        // ล้างค่าที่ซ้ำกับใน Array ออกเพื่อหาประโยคใหม่จริงๆ
+        const onlyNewText = currentTotalText.replace(allResults.join(''), '');
+        
+        if (onlyNewText.trim().length > 0) {
+            allResults.push(onlyNewText); 
+        }
+
+        if (isRecording) {
+            // เพิ่ม Delay การ Restart เป็น 300ms เพื่อให้ Browser เคลียร์ Buffer เดิมให้เกลี้ยง
+            setTimeout(() => {
+                if(isRecording) recognition.start();
+            }, 300); 
+            return;
+        }
+
+        // --- ส่วนที่หายไป: ต้องใส่ Logic ปิด UI และปิดฟังก์ชันให้เรียบร้อย ---
+        micBtn.classList.remove('recording');
+        pulseRing.classList.add('hidden');
+        micLabel.innerText = "แตะเพื่อเริ่มพูด";
+        micLabel.classList.remove('text-red-400');
+        clearInterval(timerInterval);
+        document.getElementById('timerDisplay').classList.add('opacity-0');
+    }; // <--- เติมปีกกาปิดฟังก์ชัน onend ตรงนี้
+
+    function clearText() {
+        resultArea.value = '';
+        allResults = []; // เปลี่ยนเป็นล้างค่า Array ด้วย
+        analyzeBtn.disabled = true;
+        analyzeBtn.classList.add('bg-slate-700', 'text-slate-400');
+        document.getElementById('reportContent').classList.add('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+    }
+    
+    // ==========================================
+    //  KNOWLEDGE BASE & SCENARIO LOGIC
+    // ==========================================
+    
+    const scenarios = [
+      {
+        id: 'academic',
+        keywords: ['สอบ', 'เกรด', 'เรียน', 'การบ้าน', 'อ่านหนังสือ', 'มหาวิทยาลัย', 'สอบตก', 'คะแนน'],
+        core: 'ความวิตกกังวลด้านผลการเรียนและการศึกษาต่อ (Academic Stress)',
+        cause: 'แรงกดดันจากความคาดหวังของตนเองหรือครอบครัว และความไม่มั่นใจในการเตรียมตัวสอบ',
+        solutions: [
+          'จัดตารางเวลาอ่านหนังสือให้ชัดเจน (Time Boxing)',
+          'ปรึกษาครูประจำวิชาเพื่อขอคำแนะนำในจุดที่อ่อน',
+          'โฟกัสที่ความก้าวหน้าเล็กๆ น้อยๆ แทนความสมบูรณ์แบบ',
+          'นัดคุยกับครูแนะแนวเรื่องการวางแผนศึกษาต่อ'
+        ]
+      },
+      {
+        id: 'family',
+        keywords: ['พ่อ', 'แม่', 'ที่บ้าน', 'ครอบครัว', 'โดนด่า', 'ทะเลาะ', 'ไล่ออก', 'ไม่เข้าใจ', 'บังคับ'],
+        core: 'ความขัดแย้งภายในครอบครัว (Family Conflict)',
+        cause: 'ช่องว่างระหว่างวัย (Generation Gap) และรูปแบบการสื่อสารที่ไม่ตรงกัน หรือความคาดหวังที่สูงเกินไปของผู้ปกครอง',
+        solutions: [
+          'หาจังหวะเวลาที่อารมณ์เย็นลงทั้งสองฝ่ายเพื่อเปิดใจคุย',
+          'ใช้ "I Message" ในการสื่อสาร (เช่น "หนูรู้สึก..." แทน "แม่ทำไม...")',
+          'ปรึกษาครูที่ปรึกษาเพื่อช่วยเป็นคนกลางในการเจรจา',
+          'หากิจกรรมทำร่วมกันเพื่อกระชับความสัมพันธ์'
+        ]
+      },
+      {
+        id: 'social',
+        keywords: ['เพื่อน', 'แฟน', 'เหงา', 'เข้ากับคนอื่นไม่ได้', 'โดนแกล้ง', 'นินทา', 'กลุ่ม', 'เลิก', 'อกหัก'],
+        core: 'ปัญหาความสัมพันธ์และการปรับตัวทางสังคม (Social & Relationship Issues)',
+        cause: 'ความเข้าใจผิด การสื่อสารที่คลาดเคลื่อน หรือการถูกกีดกันออกจากกลุ่มสังคม (Social Exclusion)',
+        solutions: [
+          'ถอยออกมามองปัญหาอย่างเป็นกลาง ไม่โทษตัวเองฝ่ายเดียว',
+          'ปรึกษาเพื่อนสนิทที่ไว้ใจได้หรือครูแนะแนว',
+          'เข้าร่วมชมรมหรือกิจกรรมที่ตนเองสนใจเพื่อเจอเพื่อนกลุ่มใหม่',
+          'ฝึกทักษะการปฏิเสธ (Assertiveness) เมื่อไม่สบายใจ'
+        ]
+      },
+      {
+        id: 'financial',
+        keywords: ['เงิน', 'ค่าเทอม', 'ไม่มีตัง', 'จน', 'รายจ่าย', 'หนี้', 'ยืม'],
+        core: 'ความเครียดด้านเศรษฐานะ (Financial Stress)',
+        cause: 'สภาพคล่องทางการเงินในครอบครัวไม่เพียงพอ หรือภาระค่าใช้จ่ายที่สูงขึ้นฉับพลัน',
+        solutions: [
+          'ติดต่อฝ่ายกิจการนักเรียนเพื่อขอข้อมูลทุนการศึกษา',
+          'วางแผนการใช้จ่ายรายวัน (ทำบัญชีรายรับ-รายจ่าย)',
+          'ปรึกษาครูที่ปรึกษาเพื่อหาแนวทางช่วยเหลือฉุกเฉิน',
+          'หารายได้เสริมที่เหมาะสมและไม่กระทบการเรียน'
+        ]
+      },
+      {
+        id: 'addiction',
+        keywords: ['เกม', 'นอนดึก', 'ไม่ตื่น', 'ติดโทรศัพท์', 'ขี้เกียจ', 'เบื่อ'],
+        core: 'ปัญหาพฤติกรรมและการจัดระเบียบวินัย (Behavioral Issues)',
+        cause: 'ขาดแรงจูงใจในการเรียน (Lack of Motivation) หรือการเสพติดสิ่งเร้าเพื่อหลีกหนีปัญหา',
+        solutions: [
+          'ตั้งเป้าหมายเล็กๆ ที่ทำสำเร็จได้ง่ายในแต่ละวัน',
+          'จำกัดเวลาหน้าจอ (Screen Time) อย่างเป็นขั้นตอน',
+          'หาแรงบันดาลใจใหม่ๆ นอกห้องเรียน',
+          'ปรับเวลานอนให้เร็วขึ้นทีละ 15 นาที'
+        ]
+      },
+      {
+        id: 'depression', 
+        keywords: ['ตาย', 'ฆ่าตัวตาย', 'ไม่อยากอยู่', 'หายไป', 'ไร้ค่า', 'เจ็บ', 'กรีด', 'เศร้า'],
+        core: 'ภาวะความเสี่ยงด้านสุขภาพจิต (Mental Health Risk) - **ต้องการการดูแลด่วน**',
+        cause: 'ภาวะซึมเศร้าสะสม ความรู้สึกโดดเดี่ยว หรือสารเคมีในสมองไม่สมดุล',
+        solutions: [
+          '**แจ้งครูพยาบาลหรือนักจิตวิทยาโรงเรียนทันที**',
+          'ติดต่อสายด่วนสุขภาพจิต 1323',
+          'อย่าปล่อยให้นักเรียนอยู่คนเดียว',
+          'รับฟังด้วยความเข้าใจโดยไม่ตัดสิน (Active Listening)'
+        ]
+      }
+    ];
+
+    const defaultScenario = {
+      id: 'general',
+      core: 'ความเครียดทั่วไปในวัยเรียน (General Stress)',
+      cause: 'ภาระงานที่สะสมหรือการพักผ่อนไม่เพียงพอ',
+      solutions: [
+        'จัดลำดับความสำคัญของงาน (Priority Setting)',
+        'หาเวลาพักผ่อนเพื่อผ่อนคลายสมอง (Refresh)',
+        'พูดคุยระบายความรู้สึกกับคนที่ไว้ใจ'
+      ]
+    };
+
+    function getScenario(text) {
+      for (let s of scenarios) {
+        if (s.keywords.some(k => text.includes(k))) {
+          return s;
+        }
+      }
+      return defaultScenario;
+    }
+
+    // ฟังก์ชันสร้างข้อมูลกราฟความเครียดเทียบกับเวลา
+    function generateStressTimeline(totalSeconds, baseRisk, text) {
+        let labels = [];
+        let data = [];
+        // ถ้าเวลาพูดน้อยกว่า 10 วิ ให้จำลองเป็น 10 วิไปเลยจะได้มีกราฟให้ดู
+        let simulatedSeconds = Math.max(10, totalSeconds); 
+        let dataPoints = 6; // แบ่งกราฟออกเป็น 6 จุด
+        
+        // เช็คว่ามีคำรุนแรงไหม เพื่อจำลองจุด Peak ของอารมณ์
+        const extremeWords = ['ตาย', 'ฆ่าตัวตาย', 'เกลียด', 'ไม่ไหว', 'ร้องไห้', 'เครียดมาก', 'เจ็บ', 'ไร้ค่า'];
+        let hasExtreme = extremeWords.some(w => text.includes(w));
+
+        for(let i = 0; i <= dataPoints; i++) {
+            let currentSec = Math.floor((i / dataPoints) * simulatedSeconds);
+            let m = Math.floor(currentSec / 60).toString().padStart(2, '0');
+            let s = (currentSec % 60).toString().padStart(2, '0');
+            labels.push(`${m}:${s}`);
+            
+            // จำลองความสวิงของอารมณ์ (+- 15% จากค่าความเครียดหลัก)
+            let noise = (Math.random() * 30) - 15; 
+            let pointStress = baseRisk + noise;
+            
+            // ถ้ามีคำรุนแรง ให้กราฟช่วงกลางๆ พุ่งสูงขึ้นไปอีก (Peak Point)
+            if (hasExtreme && (i === 3 || i === 4)) {
+                pointStress += 25; 
+            }
+            
+            // จำกัดค่าไม่ให้เกิน 100 หรือต่ำกว่า 10
+            pointStress = Math.max(10, Math.min(95, pointStress));
+            data.push(Math.floor(pointStress));
+        }
+        return { labels, data };
+    }
+
+    // --- ANALYZE ACTION (เวอร์ชันแก้ไขกราฟและสรุป SOAP 1 ประโยค) ---
+    
+    analyzeBtn.onclick = () => {
+      const text = resultArea.value.trim();
+      if(!text) return;
+
+      document.getElementById('emptyState').classList.add('hidden');
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('reportContent').classList.add('hidden');
+
+      setTimeout(() => {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('reportContent').classList.remove('hidden');
+        
+        const data = getScenario(text); 
+        let risk = Math.floor(Math.random() * 31) + 50;
+
+        // ดึงเวลาที่อัดได้จริงมาแสดง
+        let m = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+        let s = (secondsElapsed % 60).toString().padStart(2, '0');
+        document.getElementById('totalTimeDisplay').innerText = `${m}:${s}`;
+
+        document.getElementById('stressScore').innerText = risk + "%";
+        document.getElementById('stabilityScore').innerText = (100 - risk) + "%";
+        document.getElementById('textCore').innerText = data.core;
+        document.getElementById('textSolution').innerHTML = data.solutions.map(s => `• ${s}`).join('<br>');
+
+        // SOAP Note แบบ 1 ประโยค
+        document.getElementById('soap-s').innerText = `นักเรียนระบายความรู้สึกเกี่ยวกับ${data.core.split('(')[0]}ตามที่บันทึกได้`;
+        document.getElementById('soap-o').innerText = `ตรวจพบความถี่เสียงที่มีความกังวลในหมวด ${data.id}`;
+        document.getElementById('soap-a').innerText = `ประเมินพบภาวะความเครียด ${risk}% สอดคล้องกับปัญหา ${data.core}`;
+        document.getElementById('soap-p').innerText = `ดำเนินการตามขั้นตอน ${data.solutions[0]} และติดตามผล`;
+
+        const pieCtx = document.getElementById('emotionPieChart').getContext('2d');
+        if(window.myPieChart) window.myPieChart.destroy();
+        window.myPieChart = new Chart(pieCtx, { 
+            /* options เดิมของคุณ */ 
+            type: 'doughnut',
+            data: {
+                labels: ['เครียด', 'ปกติ'],
+                datasets: [{ data: [risk, 100 - risk], backgroundColor: ['#f43f5e', '#10b981'], borderWidth: 0 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '70%' }
+        });
+
+        // === ส่วนที่แก้ไข: ห่อหุ้มด้วย requestAnimationFrame เพื่อรอให้ UI พร้อม ===
+        requestAnimationFrame(() => {
+            const timelineData = generateStressTimeline(secondsElapsed, risk, text);
+            const timelineCtx = document.getElementById('stressTimelineChart').getContext('2d');
+            
+            if(window.myTimelineChart) window.myTimelineChart.destroy();
+            window.myTimelineChart = new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: timelineData.labels,
+                    datasets: [{
+                        label: 'ระดับความเครียด (%)',
+                        data: timelineData.data,
+                        borderColor: '#a855f7',
+                        backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#f43f5e',
+                        pointRadius: 4
+                    }]
+                },
+                // ค้นหาในส่วน window.myTimelineChart = new Chart(...)
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // เพื่อให้กราฟขยายเต็ม h-48 ที่เราตั้งไว้
+                    layout: {
+                        padding: { left: 10, right: 10, top: 10, bottom: 0 }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 100, 
+                            grid: { color: 'rgba(255,255,255,0.05)' }, 
+                            ticks: { color: '#94a3b8', font: {size: 11}, stepSize: 20 } 
+                        },
+                        x: { 
+                            grid: { display: false }, 
+                            ticks: { color: '#94a3b8', font: {size: 11} } 
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        });
+      }, 1500);
+    };
+
+  </script>
+</body>
+</html>
